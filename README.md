@@ -14,14 +14,28 @@ Just open `index.html` directly in a browser.
 
 **Step 1 — push to GitHub.** Run `setup.ps1` (PowerShell) from inside this folder — it initializes git, commits the files, and (if the GitHub CLI `gh` is installed and logged in) creates a public GitHub repo named `edwindurham` and pushes. If `gh` isn't set up, it prints the manual steps instead.
 
-**Step 2 — host on Cloudflare Pages.**
-1. In the Cloudflare dashboard, go to **Workers & Pages → Create → Pages → Connect to Git**, and authorize/select the `edwindurham` GitHub repo.
-2. Build settings: no framework preset, no build command, output directory `/` (this is a plain static file, nothing to build).
-3. Deploy. Cloudflare gives you a `*.pages.dev` URL immediately — check that first.
-4. In the Pages project, go to **Custom domains → Set up a custom domain**, enter `edwindurham.com`, and follow the prompt. If the domain's nameservers are already pointed at Cloudflare, this is automatic (Cloudflare adds the DNS record itself). If the domain isn't on Cloudflare DNS yet, it'll walk you through switching the nameservers at your registrar first.
-5. Cloudflare issues and renews the SSL certificate automatically — no separate HTTPS step needed.
+**Step 2 — host on Cloudflare.**
 
-The `CNAME` file in this repo is a GitHub Pages convention and is harmless either way — it's ignored by Cloudflare Pages, and kept here in case GitHub Pages is ever used as a fallback instead.
+Cloudflare's current "Create an app" flow connects a GitHub repo and deploys it with `npx wrangler deploy`, which requires a `wrangler.jsonc` config file in the repo root. This repo has one:
+
+```jsonc
+{
+  "name": "edwindurham",
+  "compatibility_date": "2026-09-14",
+  "assets": { "directory": "." }
+}
+```
+
+That tells Wrangler to serve everything in the repo root (`index.html` and friends) as static assets — no build step needed.
+
+1. Make sure `wrangler.jsonc` is committed and pushed to GitHub (it needs to be on the branch Cloudflare deploys from — otherwise the deploy command has nothing to work with).
+2. In the Cloudflare dashboard, go to **Workers & Pages → Create**, connect to Git, and select the `edwindurham` GitHub repo.
+3. Leave the build command empty and leave the deploy command as the prefilled `npx wrangler deploy`.
+4. Click **Deploy**. Cloudflare gives you a `*.workers.dev` (or `*.pages.dev`) URL immediately — check that first.
+5. In the project settings, go to **Custom domains → Set up a custom domain**, enter `edwindurham.com`, and follow the prompt. Since `edwindurham.com` is already an active Cloudflare zone (nameservers pointed at Cloudflare), this is automatic — Cloudflare adds the DNS record itself.
+6. Cloudflare issues and renews the SSL certificate automatically — no separate HTTPS step needed.
+
+The `CNAME` file in this repo is a GitHub Pages convention and is harmless either way — it's ignored by Cloudflare, and kept here in case GitHub Pages is ever used as a fallback instead.
 
 ## Editing the "Track record" section
 

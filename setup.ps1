@@ -50,11 +50,13 @@ if ($ghAvailable) {
 }
 
 Write-Host ""
-Write-Host "== Next: host it on Cloudflare Pages ==" -ForegroundColor Cyan
-Write-Host "1. Cloudflare dashboard > Workers and Pages > Create > Pages > Connect to Git."
-Write-Host "2. Authorize Cloudflare on GitHub if asked, then pick the 'edwindurham' repo."
-Write-Host "3. Build settings: no framework preset, no build command, output directory /"
-Write-Host "4. Deploy - you will get a *.pages.dev URL to check first."
+Write-Host "== Next: host it on Cloudflare ==" -ForegroundColor Cyan
+Write-Host "This repo includes wrangler.jsonc, which Cloudflare's 'npx wrangler deploy'"
+Write-Host "command needs in order to serve index.html as a static asset."
+Write-Host "1. Make sure wrangler.jsonc is committed and pushed (this script's commit above includes it)."
+Write-Host "2. Cloudflare dashboard > Workers and Pages > Create > connect to Git > pick the 'edwindurham' repo."
+Write-Host "3. Leave build command empty; leave deploy command as the prefilled 'npx wrangler deploy'."
+Write-Host "4. Deploy - you will get a *.workers.dev (or *.pages.dev) URL to check first."
 Write-Host "5. In the project: Custom domains > Set up a custom domain > edwindurham.com"
-Write-Host "   (If edwindurham.com is not on Cloudflare DNS yet, it will walk you through that.)"
+Write-Host "   (edwindurham.com is already an active Cloudflare zone, so this is automatic.)"
 Write-Host "See README.md for the full walkthrough."
