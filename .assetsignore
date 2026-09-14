@@ -1,0 +1,9 @@
+.git/
+.wrangler/
+node_modules/
+.gitignore
+.assetsignore
+wrangler.jsonc
+README.md
+setup.ps1
+Claude outputs/
