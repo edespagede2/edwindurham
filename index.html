@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edwin Durham</title>
+<meta name="description" content="Edwin Durham advises SMBs and startups on sales strategy and enterprise access -- reaching the decision-makers who can actually say yes.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper: #F1EFE6;
+    --paper-raised: #FAF9F4;
+    --paper-sunken: #E5E2D3;
+    --ink: #171C26;
+    --ink-soft: #4A5266;
+    --muted: #7A8291;
+    --line: #D9D6C7;
+    --navy: #1B2740;
+    --navy-ink: #EDEFF5;
+    --navy-line: #33405F;
+    --accent: #96751B;
+    --accent-soft: #EFE6C8;
+    --accent-ink: #6E5714;
+    --focus: #96751B;
+    --shadow: 0 1px 2px rgba(23,28,38,0.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #0F131C;
+      --paper-raised: #161C29;
+      --paper-sunken: #0A0D14;
+      --ink: #ECEEF3;
+      --ink-soft: #AEB6C6;
+      --muted: #7C8598;
+      --line: #232B3D;
+      --navy: #0A0E17;
+      --navy-ink: #ECEEF3;
+      --navy-line: #232E48;
+      --accent: #D9AF4A;
+      --accent-soft: #2A2311;
+      --accent-ink: #E9C866;
+      --focus: #D9AF4A;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #0F131C;
+    --paper-raised: #161C29;
+    --paper-sunken: #0A0D14;
+    --ink: #ECEEF3;
+    --ink-soft: #AEB6C6;
+    --muted: #7C8598;
+    --line: #232B3D;
+    --navy: #0A0E17;
+    --navy-ink: #ECEEF3;
+    --navy-line: #232E48;
+    --accent: #D9AF4A;
+    --accent-soft: #2A2311;
+    --accent-ink: #E9C866;
+    --focus: #D9AF4A;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    margin: 0;
+    font-family: "Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  a{ color: var(--accent-ink); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  img{ max-width: 100%; }
+
+  .mono{ font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }
+  .num{ font-variant-numeric: tabular-nums; }
+
+  .shell{ max-width: 900px; margin: 0 auto; padding: 0 1.6rem; }
+
+  /* nav */
+  nav.top{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 0;
+  }
+  nav.top .brand{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+  }
+  nav.top .cta-link{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.5rem 0.9rem;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  nav.top .cta-link:hover{ border-color: var(--accent); color: var(--accent-ink); }
+
+  /* hero */
+  .hero{ padding: 2.2rem 0 3.4rem; }
+  .eyebrow{
+    font-family: "IBM Plex Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  h1{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2.3rem, 5.6vw, 3.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.3rem;
+    text-wrap: balance;
+    max-width: 17ch;
+  }
+  h1 em{
+    font-style: italic;
+    font-weight: 500;
+    color: var(--accent-ink);
+  }
+  .hero .lede{
+    font-size: 1.13rem;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 0 1.8rem;
+  }
+  .cta-row{
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: 0.75rem 1.15rem;
+    border-radius: 7px;
+    border: 1px solid transparent;
+  }
+  .btn.primary{ background: var(--accent); color: #1A1204; }
+  .btn.primary:hover{ background: var(--accent-ink); }
+  .btn.ghost{ border-color: var(--line); color: var(--ink); }
+  .btn.ghost:hover{ border-color: var(--accent); color: var(--accent-ink); }
+
+  section{ padding: 3rem 0; border-top: 1px solid var(--line); }
+  h2{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3.2vw, 1.9rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+  }
+  .section-lede{
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 0 0 2rem;
+    font-size: 1.02rem;
+  }
+
+  /* pains */
+  .pains{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .pain{
+    background: var(--paper-raised);
+    padding: 1.4rem 1.5rem;
+  }
+  .pain-mark{
+    font-family: "Fraunces", Georgia, serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .pain p{ margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+  @media (max-width: 640px){ .pains{ grid-template-columns: 1fr; } }
+
+  .bridge{
+    margin-top: 1.8rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.28rem;
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 42ch;
+    text-wrap: balance;
+  }
+  .bridge em{ font-style: italic; color: var(--accent-ink); }
+
+  /* method */
+  .method{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.8rem;
+  }
+  .method-item{
+    background: var(--paper-raised);
+    padding: 1.4rem 1.6rem;
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 1rem;
+  }
+  .method-label{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-ink);
+    padding-top: 0.25rem;
+  }
+  .method-item h3{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0 0 0.35rem;
+  }
+  .method-item p{ margin: 0; color: var(--ink-soft); font-size: 0.96rem; max-width: 58ch; }
+  .method-close{
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1.45;
+    max-width: 64ch;
+    text-wrap: balance;
+  }
+  .method-close em{ font-style: italic; color: var(--accent-ink); }
+  @media (max-width: 560px){
+    .method-item{ grid-template-columns: 1fr; }
+  }
+
+  /* services */
+  .services{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .service{
+    background: var(--paper-raised);
+    padding: 1.5rem 1.6rem;
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 1rem;
+  }
+  .service-num{
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding-top: 0.2rem;
+  }
+  .service h3{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin: 0 0 0.4rem;
+  }
+  .service p{ margin: 0; color: var(--ink-soft); font-size: 0.96rem; max-width: 56ch; }
+  .service .proof{
+    margin-top: 0.6rem;
+    font-size: 0.84rem;
+    color: var(--accent-ink);
+  }
+  @media (max-width: 560px){
+    .service{ grid-template-columns: 1fr; }
+  }
+
+  /* track record banner */
+  .banner-wrap{
+    margin: 0 calc(-50vw + 50%);
+    background: var(--navy);
+    color: var(--navy-ink);
+    padding: 2.6rem 0;
+  }
+  .banner-wrap .shell{ max-width: 900px; }
+  .banner-wrap .eyebrow{ color: rgba(237,239,245,0.55); }
+  .banner-wrap h2{ color: var(--navy-ink); }
+  .banner-wrap .section-lede{ color: rgba(237,239,245,0.65); }
+  .track-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+  }
+  .track-tile{
+    background: rgba(255,255,255,0.035);
+    border: 1px solid var(--navy-line);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    min-height: 104px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.32rem;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .track-tile.tile-fade{ opacity: 0; transform: translateY(5px); }
+  .track-company{ font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.02rem; }
+  .track-company .sub{
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: rgba(237,239,245,0.55);
+    margin-top: 0.15rem;
+  }
+  .track-level{ font-size: 0.86rem; color: rgba(237,239,245,0.8); }
+  .banner-note{
+    margin-top: 1.4rem;
+    font-size: 0.82rem;
+    color: rgba(237,239,245,0.5);
+  }
+  .toggle-btn{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: transparent;
+    border: 1px solid var(--navy-line);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    cursor: pointer;
+  }
+  .toggle-btn:hover{ border-color: var(--accent); }
+
+  .sort-row{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+  }
+  .sort-label{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(237,239,245,0.45);
+    margin-right: 0.2rem;
+  }
+  .track-industry{
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(237,239,245,0.4);
+    margin-top: 0.15rem;
+  }
+
+  /* credentials */
+  .creds p{ color: var(--ink-soft); max-width: 66ch; }
+  .cred-tags{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+  }
+  .cred-tag{
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    border-radius: 5px;
+    padding: 0.35rem 0.6rem;
+  }
+
+  /* closing cta */
+  .closing{
+    text-align: left;
+    padding: 3.4rem 0 4rem;
+  }
+  .closing h2{ font-size: clamp(1.7rem, 4vw, 2.3rem); max-width: 20ch; }
+
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 1.6rem 0 3rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+  footer a{ color: var(--muted); }
+  footer a:hover{ color: var(--accent-ink); }
+
+  @media (prefers-reduced-motion: no-preference){
+    .hero h1, .hero .lede, .hero .cta-row{
+      animation: rise 0.5s ease-out both;
+    }
+    .hero .lede{ animation-delay: 0.08s; }
+    .hero .cta-row{ animation-delay: 0.16s; }
+    @keyframes rise{
+      from{ opacity: 0; transform: translateY(8px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+  }
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <nav class="top">
+    <span class="brand">Edwin Durham</span>
+    <a class="cta-link" href="https://calendly.com/edwin_durham/new-meeting" target="_blank" rel="noopener">Book a call</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="shell">
+    <div class="eyebrow">Sales Strategy &amp; Enterprise Access Advisor</div>
+    <h1>You have something worth their attention. Getting it <em>in front of them</em> is the hard part.</h1>
+    <p class="lede">I'm Edwin Durham. For 45 years, I was the one on the outside — the rep working to get past the gatekeeper and in front of whoever could actually say yes, at banks, telecom carriers, power utilities, and Fortune-scale retailers. I cracked that code a long time ago. Now I help SMBs and startups get the same access, and build the sales strategy and organization that makes it repeatable.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://calendly.com/edwin_durham/new-meeting" target="_blank" rel="noopener">Book a call</a>
+      <a class="btn ghost" href="mailto:edwin@edwindurham.com">Email</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/edwin-durham/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="shell">
+    <h2>Sound familiar?</h2>
+    <p class="section-lede">The problem usually isn't the product. It's that the right person never hears about it.</p>
+    <div class="pains">
+      <div class="pain">
+        <span class="pain-mark">&ldquo;</span>
+        <p>Your solution is genuinely good — but your outbound email is competing with two hundred others in an inbox a gatekeeper screens before it ever reaches someone who'd understand why it matters.</p>
+      </div>
+      <div class="pain">
+        <span class="pain-mark">&ldquo;</span>
+        <p>You get a "warm intro" to someone two levels below the actual decision-maker, and the deal quietly stalls in a committee that was never going to say yes on its own.</p>
+      </div>
+      <div class="pain">
+        <span class="pain-mark">&ldquo;</span>
+        <p>You're spending your best hours on volume outreach because no one on your team has ever actually sat in a meeting with a real decision-maker — so you're guessing at what earns attention instead of knowing.</p>
+      </div>
+      <div class="pain">
+        <span class="pain-mark">&ldquo;</span>
+        <p>Every month this drags on is a month a competitor with a worse product — and better access — closes the deal instead.</p>
+      </div>
+    </div>
+    <p class="bridge">None of that is a marketing problem. It's an <em>access</em> problem — and it's the one I've spent 45 years learning how to crack.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shell">
+    <h2>Getting in is a discipline, not a talent</h2>
+    <p class="section-lede">I was never the one being chased — I was the rep on the outside, learning what it actually takes to reach the person who can say yes. Forty-five years of that, across banks, telecom, utilities, and retail, taught me it isn't a personality trait. It's a method, and it works in any industry, at a company of any size.</p>
+    <div class="method">
+      <div class="method-item">
+        <div class="method-label">The mix</div>
+        <div>
+          <h3>Art and science, not a script</h3>
+          <p>There's no single formula that opens every door. Getting through takes pattern recognition sharpened over decades, paired with real process — channel, message, timing, and follow-through, tracked and refined like any other discipline.</p>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-label">Stay current</div>
+        <div>
+          <h3>The tools change every year — the goal doesn't</h3>
+          <p>Whatever channel a gatekeeper hasn't yet learned to filter is usually the one that works. That means staying current on new platforms and integrations, and retiring an approach the moment it stops earning attention.</p>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-label">Or don't</div>
+        <div>
+          <h3>Sometimes the oldest tool wins</h3>
+          <p>New isn't always right. I once got through a door that email, phone, and LinkedIn couldn't touch by sending a telegram — long after telegrams had stopped being a serious business tool. It reached the President and CEO of Ciena, the company that pioneered dense wavelength-division multiplexing and laid much of the groundwork for today's broadband fiber-optic backbone. If it's the one thing on their desk they'll actually open, it's the right tool.</p>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-label">Bilingual</div>
+        <div>
+          <h3>I speak both languages in the room</h3>
+          <p>I've built the technology myself and carried the quota myself, so I can talk systems with an engineer and pipeline with a CRO on the same call — which is usually what it takes to be taken seriously by either one.</p>
+        </div>
+      </div>
+    </div>
+    <p class="method-close">That skill is transferable — and on this site, transferring it is the point. I'm not selling you my hours doing outbound; I'm selling you <em>the system</em>: the playbook, the team, and the process, so your organization can do this at scale, long after I'm not the one making the calls.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shell">
+    <h2>How I help</h2>
+    <p class="section-lede">Available individually, or as a combined engagement — most clients end up needing a mix.</p>
+    <div class="services">
+      <div class="service">
+        <div class="service-num mono">01</div>
+        <div>
+          <h3>Sales Strategy Advisory</h3>
+          <p>Diagnose the actual gap between your current pipeline and your revenue goal, and build the specific plan — market, message, and motion — to close it.</p>
+        </div>
+      </div>
+      <div class="service">
+        <div class="service-num mono">02</div>
+        <div>
+          <h3>Sales Organization Design &amp; Fixes</h3>
+          <p>Redesign the structure, hiring profile, and comp plan so your sales org matches your stage and goals instead of last year's headcount plan.</p>
+        </div>
+      </div>
+      <div class="service">
+        <div class="service-num mono">03</div>
+        <div>
+          <h3>Inside Sales Stand-Up</h3>
+          <p>Build the function from zero — team, cadence, systems — including the specific skill most founders don't have on staff: getting past the gatekeeper to the person who can actually say yes.</p>
+          <div class="proof">Proof: founded and built ChannelForge's outbound sales organization from zero. Also built ORS Group's outbound infrastructure from scratch — Seamless.ai, Zoho, LinkedIn integrations, ClearoutPhone, and automated calling and texting.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="banner-wrap">
+  <div class="shell">
+    <div class="eyebrow">Track record</div>
+    <h2>Decision-makers I've actually reached</h2>
+    <p class="section-lede">Real accounts, real levels, real company size — this is what enterprise access looks like in practice, not theory.</p>
+    <div class="sort-row">
+      <span class="sort-label">Live feed</span>
+      <button class="toggle-btn" id="gridPauseBtn" type="button" hidden>Pause</button>
+    </div>
+    <div class="track-grid" id="trackGrid"></div>
+    <p class="banner-note" id="trackNote">A representative sample of engagements, cycling continuously — not the complete list. Additional companies and references available on request.</p>
+  </div>
+</div>
+
+<section class="creds">
+  <div class="shell">
+    <h2>Further track record</h2>
+    <p>Selling network security into the most risk-averse buyers there are meant reaching decision-makers inside the U.S. Air Force, the National Security Agency, the U.S. Geological Survey, a state government system, banks, and credit unions (Intrusion.com, Allot Communications) — and, on the enterprise networking side, Fortune 500 and federal legislative accounts including Marriott, FedEx, and the U.S. House of Representatives (Visual Networks).</p>
+    <p>The same pattern shows up elsewhere: the original Sprint frame-relay rollout, one of the first commercial deployments of the technology (Stratacom); a 50–70-partner reseller network across North America and Latin America that I inherited and grew rather than built from scratch (Cray Communications); and condition-based maintenance systems sold into power-plant and utility operators, including Vistra Energy (AssetSense). Sandler-trained since 2001, informed by Holden Power-Based Selling. 142% of quota. MBA, University of Houston; BS Civil Engineering, Colorado State University. Native bilingual English/Spanish with hands-on Latin America market experience.</p>
+    <div class="cred-tags">
+      <span class="cred-tag">Sandler-Trained</span>
+      <span class="cred-tag">142% of Quota</span>
+      <span class="cred-tag">MBA, Univ. of Houston</span>
+      <span class="cred-tag">BS Civil Eng., Colorado State</span>
+      <span class="cred-tag">EN / ES Bilingual</span>
+      <span class="cred-tag">Latin America Market Entry</span>
+      <span class="cred-tag">Banks &amp; Credit Unions</span>
+      <span class="cred-tag">Defense &amp; Intelligence</span>
+      <span class="cred-tag">Federal &amp; State Government</span>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="shell">
+    <div class="eyebrow">Let's talk</div>
+    <h2>Ready to get in the room with the people who can say yes?</h2>
+    <div class="cta-row" style="margin-top:1.2rem">
+      <a class="btn primary" href="https://calendly.com/edwin_durham/new-meeting" target="_blank" rel="noopener">Book a call</a>
+      <a class="btn ghost" href="mailto:edwin@edwindurham.com">Email</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/edwin-durham/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="shell" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;width:100%">
+    <span>&copy; Edwin Durham</span>
+    <a href="https://www.linkedin.com/in/edwin-durham/" target="_blank" rel="noopener">linkedin.com/in/edwin-durham</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---------------------------------------------------------------------
+  // TRACK RECORD DATA — edit this array to add, remove, or change entries.
+  // Each row:
+  //   company       — display name
+  //   sub           — optional detail line under the name (brands, group)
+  //   industry      — shown as a small tag on the tile
+  //   level         — title/level of the contact reached. Use "TBD" as a
+  //                   placeholder for an entry added before the exact
+  //                   title is confirmed — rows still marked "TBD" are
+  //                   automatically left out of the live rotation below,
+  //                   so nothing unfinished shows to visitors. Swap in
+  //                   the real title and the row joins the rotation.
+  //   revenueDisplay, revenueValue, private, scaleNote — kept for
+  //                   reference/reuse but not shown on the tiles below.
+  //   addedOrder    — internal only; keep incrementing for new rows.
+  //
+  // SCALING: just keep adding objects below. The grid shows up to
+  // TILE_COUNT_MAX tiles at once and, once there are more real (non-TBD)
+  // entries than that, each tile independently and continuously swaps
+  // itself for another entry from the array, pseudo-randomly, forever —
+  // nothing else here needs to change as the list grows.
+  // ---------------------------------------------------------------------
+  var trackRecord = [
+    { company: "Albertsons", sub: "", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "$83.2B", revenueValue: 83200000000, private: false, addedOrder: 1 },
+    { company: "Ross Stores", sub: "", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "$22.75B", revenueValue: 22750000000, private: false, addedOrder: 2 },
+    { company: "Vertiv", sub: "", industry: "Data Center Infrastructure", level: "SVP, Supply Chain", revenueDisplay: "$10.2B", revenueValue: 10200000000, private: false, addedOrder: 3 },
+    { company: "Fastco Industries", sub: "", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 4 },
+    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 5 },
+    { company: "U.S. Air Force", sub: "Special Projects", industry: "Defense & Military", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 6 },
+    { company: "National Security Agency", sub: "", industry: "Defense & Intelligence", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 7 },
+    { company: "U.S. Geological Survey", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 8 },
+    { company: "U.S. House of Representatives", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 9 },
+
+    // Placeholders — fill in company, sub, industry, level, and either
+    // revenueDisplay/revenueValue or scaleNote for each. Rows stay out
+    // of the live rotation above until "level" is changed from "TBD".
+    { company: "Company 10", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
+    { company: "Company 11", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
+    { company: "Company 12", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
+    { company: "Company 13", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
+    { company: "Company 14", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 14 },
+    { company: "Company 15", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 15 },
+    { company: "Company 16", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 16 },
+    { company: "Company 17", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 17 },
+    { company: "Company 18", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 18 },
+    { company: "Company 19", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 19 },
+    { company: "Company 20", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 20 }
+  ];
+
+  // -----------------------------------------------------------------------
+  // LIVE ROTATING GRID — a fixed number of tiles, each on its own timer,
+  // independently swapping to another (not-currently-shown) entry with a
+  // brief fade. Because each tile's timer is staggered and randomized,
+  // tiles update one at a time rather than all at once — the "matrix of
+  // companies renewing in a pseudo-random pattern" effect. Once there are
+  // more eligible entries than tiles, it repeats indefinitely by design.
+  // Respects prefers-reduced-motion (renders a static grid, no timers) and
+  // exposes a Pause/Resume control for anyone who wants to stop it.
+  // -----------------------------------------------------------------------
+  var TILE_COUNT_MAX = 12;
+  var FADE_MS = 450;
+  var MIN_DELAY_MS = 3200;
+  var MAX_DELAY_MS = 6800;
+
+  var gridEl = document.getElementById('trackGrid');
+  var pauseBtn = document.getElementById('gridPauseBtn');
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  // Only entries with a confirmed level join the live pool — "TBD" rows
+  // stay out of rotation until you fill in the real title.
+  var pool = trackRecord.filter(function(r){ return r.level && r.level.toUpperCase() !== 'TBD'; });
+  var tileCount = Math.min(TILE_COUNT_MAX, pool.length);
+  var rotates = !reduceMotion && pool.length > tileCount && tileCount > 0;
+
+  var tiles = [];
+  var shuffleQueue = [];
+  var paused = false;
+
+  function keyOf(item){ return item.company + '|' + item.addedOrder; }
+
+  function shuffled(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  // Draws the next tile's content from a shuffled queue (reshuffled once
+  // exhausted) so every entry cycles through before anything repeats,
+  // skipping whatever is currently showing on another tile.
+  function nextItem(excludeKeys){
+    if(shuffleQueue.length === 0){ shuffleQueue = shuffled(pool); }
+    for(var i = 0; i < shuffleQueue.length; i++){
+      if(excludeKeys.indexOf(keyOf(shuffleQueue[i])) === -1){
+        return shuffleQueue.splice(i, 1)[0];
+      }
+    }
+    return shuffleQueue.shift();
+  }
+
+  function tileMarkup(item){
+    var subHtml = item.sub ? '<span class="sub">' + item.sub + '</span>' : '';
+    return '' +
+      '<div class="track-company">' + item.company + subHtml + '</div>' +
+      '<div class="track-level">' + item.level + '</div>' +
+      '<div class="track-industry">' + item.industry + '</div>';
+  }
+
+  function currentKeys(){
+    return tiles.map(function(t){ return keyOf(t.item); });
+  }
+
+  function buildTiles(){
+    if(!gridEl) return;
+    gridEl.innerHTML = '';
+    tiles = [];
+    shuffleQueue = shuffled(pool);
+    var initial = shuffleQueue.splice(0, tileCount);
+    initial.forEach(function(item){
+      var el = document.createElement('div');
+      el.className = 'track-tile';
+      el.innerHTML = tileMarkup(item);
+      gridEl.appendChild(el);
+      tiles.push({ el: el, item: item, timer: null });
+    });
+  }
+
+  function scheduleTile(tileObj, initialDelay){
+    if(!rotates || paused) return;
+    var delay = initialDelay != null ? initialDelay : (MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS));
+    tileObj.timer = setTimeout(function(){ rotateTile(tileObj); }, delay);
+  }
+
+  function rotateTile(tileObj){
+    var next = nextItem(currentKeys());
+    tileObj.el.classList.add('tile-fade');
+    setTimeout(function(){
+      tileObj.item = next;
+      tileObj.el.innerHTML = tileMarkup(next);
+      tileObj.el.classList.remove('tile-fade');
+      scheduleTile(tileObj);
+    }, FADE_MS);
+  }
+
+  function startRotation(){
+    tiles.forEach(function(t, i){
+      scheduleTile(t, 500 + i * 350 + Math.random() * 900);
+    });
+  }
+
+  function stopRotation(){
+    tiles.forEach(function(t){
+      if(t.timer){ clearTimeout(t.timer); t.timer = null; }
+    });
+  }
+
+  buildTiles();
+
+  if(rotates && pauseBtn){
+    pauseBtn.hidden = false;
+    startRotation();
+    pauseBtn.addEventListener('click', function(){
+      paused = !paused;
+      pauseBtn.textContent = paused ? 'Resume ▷' : 'Pause';
+      if(paused){ stopRotation(); } else { startRotation(); }
+    });
+  } else if(pauseBtn){
+    pauseBtn.hidden = true;
+  }
+})();
+</script>
+</body>
+</html>

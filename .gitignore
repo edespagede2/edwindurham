@@ -1,0 +1,9 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+node_modules/
+
+# Files Claude delivers into this folder (mockups, screenshots, etc.) —
+# not part of the published site.
+Claude outputs/
