@@ -110,6 +110,29 @@
 
   /* hero */
   .hero{ padding: 2.2rem 0 3.4rem; }
+  /* The logo art has a white background: multiply lets it sit on the
+     cream paper in light mode; dark mode keeps it on a white plate. */
+  .brand-logo{
+    display: block;
+    width: min(320px, 78%);
+    height: auto;
+    margin: 0 0 1.6rem;
+    mix-blend-mode: multiply;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .brand-logo{
+      mix-blend-mode: normal;
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.6rem;
+    }
+  }
+  :root[data-theme="dark"] .brand-logo{
+    mix-blend-mode: normal;
+    background: #fff;
+    border-radius: 12px;
+    padding: 0.6rem;
+  }
   .eyebrow{
     font-family: "IBM Plex Mono", monospace;
     text-transform: uppercase;
@@ -446,6 +469,7 @@
 
 <header class="hero">
   <div class="shell">
+    <img class="brand-logo" src="assets/opening-doors-logo.webp" width="1182" height="968" alt="Opening Doors: to people, to businesses, to opportunity">
     <div class="eyebrow">Sales Strategy &amp; Enterprise Access Advisor</div>
     <h1>You have something worth their attention. Getting it <em>in front of them</em> is the hard part.</h1>
     <p class="lede">I'm Edwin Durham. For 45 years, I was the one on the outside — the rep working to get past the gatekeeper and in front of whoever could actually say yes, at banks, telecom carriers, power utilities, and Fortune-scale retailers. I cracked that code a long time ago. Now I help SMBs and startups get the same access, and build the sales strategy and organization that makes it repeatable.</p>
