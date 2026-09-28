@@ -376,15 +376,22 @@
   .banner-wrap .section-lede{ color: rgba(237,239,245,0.65); }
   .track-grid{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.9rem;
+    position: relative;
   }
+  @media (max-width: 720px){ .track-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .track-tile{
     background: rgba(255,255,255,0.035);
     border: 1px solid var(--navy-line);
     border-radius: 10px;
     padding: 1.1rem 1.2rem;
     min-height: 104px;
+    /* Every tile is locked to the height of the tallest entry in the
+       pool (measured by sizeTiles below) so the grid never jumps as
+       tiles rotate. */
+    height: var(--tile-h, auto);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -697,7 +704,7 @@
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
   // SCALING: just keep adding objects below. The grid shows up to
-  // TILE_COUNT_MAX (currently 8) tiles at once and, once there are more real (non-TBD)
+  // TILE_COUNT_MAX (currently 4) tiles at once and, once there are more real (non-TBD)
   // entries than that, each tile independently and continuously swaps
   // itself for another entry from the array, pseudo-randomly, forever —
   // nothing else here needs to change as the list grows.
@@ -739,10 +746,12 @@
   // Respects prefers-reduced-motion (renders a static grid, no timers) and
   // exposes a Pause/Resume control for anyone who wants to stop it.
   // -----------------------------------------------------------------------
-  var TILE_COUNT_MAX = 8;
+  var TILE_COUNT_MAX = 4;
   var FADE_MS = 450;
-  var MIN_DELAY_MS = 3200;
-  var MAX_DELAY_MS = 6800;
+  // Each tile waits a random 8–14 s between swaps, so with four tiles a
+  // change happens roughly every 3 s somewhere in the grid.
+  var MIN_DELAY_MS = 8000;
+  var MAX_DELAY_MS = 14000;
 
   var gridEl = document.getElementById('trackGrid');
   var pauseBtn = document.getElementById('gridPauseBtn');
@@ -817,6 +826,30 @@
     });
   }
 
+  // Renders every eligible entry into a hidden probe tile at the live
+  // tile width, takes the tallest, and sets --tile-h so all tiles match.
+  // Re-runs when fonts finish loading and on resize.
+  function sizeTiles(){
+    if(!gridEl || tiles.length === 0) return;
+    var probe = document.createElement('div');
+    probe.className = 'track-tile';
+    probe.style.cssText = 'position:absolute;top:0;left:0;visibility:hidden;pointer-events:none;height:auto;min-height:0;width:' + tiles[0].el.getBoundingClientRect().width + 'px';
+    gridEl.appendChild(probe);
+    var max = 0;
+    pool.forEach(function(item){
+      probe.innerHTML = tileMarkup(item);
+      if(probe.offsetHeight > max){ max = probe.offsetHeight; }
+    });
+    gridEl.removeChild(probe);
+    gridEl.style.setProperty('--tile-h', Math.ceil(max) + 'px');
+  }
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(sizeTiles, 150);
+  });
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(sizeTiles); }
+
   function scheduleTile(tileObj, initialDelay){
     if(!rotates || paused) return;
     var delay = initialDelay != null ? initialDelay : (MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS));
@@ -849,6 +882,7 @@
   }
 
   buildTiles();
+  sizeTiles();
 
   if(rotates && pauseBtn){
     pauseBtn.hidden = false;
