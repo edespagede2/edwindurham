@@ -396,12 +396,18 @@
     flex-direction: column;
     justify-content: center;
     gap: 0.32rem;
-    transition: opacity 0.45s ease, transform 0.45s ease;
+    transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out, filter 0.8s ease-in-out;
   }
-  .track-tile.tile-fade{ opacity: 0; transform: translateY(5px); }
+  /* Reveal / fade stages. A tile climbs stage-0 → stage-1 → stage-2 → full
+     as it appears, and descends the same way as it leaves, each step
+     STAGE_MS long (see script), so it emerges from faint to full contrast. */
+  .track-tile.no-anim{ transition: none; }
+  .track-tile.stage-0{ opacity: 0;    transform: translateY(6px); filter: blur(1.5px); }
+  .track-tile.stage-1{ opacity: 0.28; transform: translateY(3px); filter: blur(0.8px); }
+  .track-tile.stage-2{ opacity: 0.62; transform: translateY(1px); filter: blur(0); }
   .track-tile.is-empty{
-    background: transparent;
-    border-color: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.015);
+    border: 1px dashed rgba(255,255,255,0.22);
   }
   .track-company{ font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.02rem; }
   .track-company .track-link{
@@ -760,8 +766,9 @@
   var MAX_VISIBLE = 4;
   var STEP_MIN_MS = 7000;    // pause between steps — reading time
   var STEP_MAX_MS = 10000;
-  var FADE_MS = 450;
-  var ADD_AFTER_REMOVE_MS = 700;
+  var STAGE_MS = 800;                 // each of the 3 reveal/fade stages
+  var FADE_MS = STAGE_MS * 3;         // full reveal or fade-out
+  var ADD_AFTER_REMOVE_MS = STAGE_MS * 2;  // new tiles start as leaving ones reach their faintest stage
 
   var gridEl = document.getElementById('trackGrid');
   var pauseBtn = document.getElementById('gridPauseBtn');
@@ -792,8 +799,11 @@
     return a;
   }
 
+  // Entries on screen, including ones still fading out, so neither can
+  // be picked again until fully gone.
   function visibleKeys(){
-    return slots.filter(function(sl){ return sl.item; }).map(function(sl){ return keyOf(sl.item); });
+    return slots.filter(function(sl){ return sl.item || sl.leaving; })
+      .map(function(sl){ return keyOf(sl.item || sl.leaving); });
   }
 
   // Draws the next entry from a shuffled queue, skipping anything on
@@ -830,7 +840,7 @@
       var el = document.createElement('div');
       el.className = 'track-tile is-empty';
       gridEl.appendChild(el);
-      slots.push({ el: el, item: null, shownAt: 0 });
+      slots.push({ el: el, item: null, leaving: null, shownAt: 0 });
     }
   }
 
@@ -843,27 +853,47 @@
     slot.el.classList.remove('is-empty');
   }
 
+  var STAGES = ['stage-0', 'stage-1', 'stage-2'];
+  function setStage(el, idx){
+    STAGES.forEach(function(c){ el.classList.remove(c); });
+    if(idx >= 0 && idx < STAGES.length){ el.classList.add(STAGES[idx]); }
+  }
+
+  // Appear: faint → half → full, one stage per STAGE_MS.
   function fadeIn(slot, item){
     slot.item = item;
     slot.shownAt = ++clock;
     slot.el.innerHTML = tileMarkup(item);
-    slot.el.classList.add('tile-fade');
+    // Snap to the faint starting stage with no transition, so the tile
+    // doesn't visibly dim from the outline's full opacity first.
+    slot.el.classList.add('no-anim');
+    setStage(slot.el, 0);
     slot.el.classList.remove('is-empty');
-    // next frame: let the transition run from faded to visible
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){ slot.el.classList.remove('tile-fade'); }); });
+    void slot.el.offsetWidth;   // force reflow so the snap is applied
+    slot.el.classList.remove('no-anim');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      setStage(slot.el, 1);
+      setTimeout(function(){ setStage(slot.el, 2); }, STAGE_MS);
+      setTimeout(function(){ setStage(slot.el, -1); }, STAGE_MS * 2);
+    }); });
   }
 
+  // Leave: full → half → faint → gone, then the slot returns to its outline.
   function fadeOut(slot){
-    slot.item = null;   // release immediately so a new pick can't collide
-    slot.el.classList.add('tile-fade');
+    slot.leaving = slot.item;   // slot stays occupied until the fade ends
+    slot.item = null;
+    setStage(slot.el, 2);
+    setTimeout(function(){ setStage(slot.el, 1); }, STAGE_MS);
+    setTimeout(function(){ setStage(slot.el, 0); }, STAGE_MS * 2);
     setTimeout(function(){
       slot.el.innerHTML = '';
       slot.el.classList.add('is-empty');
-      slot.el.classList.remove('tile-fade');
+      setStage(slot.el, -1);
+      slot.leaving = null;
     }, FADE_MS);
   }
 
-  function emptySlots(){ return slots.filter(function(sl){ return !sl.item; }); }
+  function emptySlots(){ return slots.filter(function(sl){ return !sl.item && !sl.leaving; }); }
 
   function addTiles(n){
     var empties = shuffled(emptySlots());
