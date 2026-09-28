@@ -704,7 +704,7 @@
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
   // SCALING: just keep adding objects below. The grid shows up to
-  // TILE_COUNT_MAX (currently 4) tiles at once and, once there are more real (non-TBD)
+  // TILE_COUNT_MAX (currently 8) tiles at once and, once there are more real (non-TBD)
   // entries than that, each tile independently and continuously swaps
   // itself for another entry from the array, pseudo-randomly, forever —
   // nothing else here needs to change as the list grows.
@@ -746,10 +746,10 @@
   // Respects prefers-reduced-motion (renders a static grid, no timers) and
   // exposes a Pause/Resume control for anyone who wants to stop it.
   // -----------------------------------------------------------------------
-  var TILE_COUNT_MAX = 4;
+  var TILE_COUNT_MAX = 8;
   var FADE_MS = 450;
-  // Each tile waits a random 8–14 s between swaps, so with four tiles a
-  // change happens roughly every 3 s somewhere in the grid.
+  // Each tile waits a random 8–14 s between swaps, so with eight tiles a
+  // change happens roughly every 1.5 s somewhere in the grid.
   var MIN_DELAY_MS = 8000;
   var MAX_DELAY_MS = 14000;
 
