@@ -686,7 +686,7 @@
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
   // SCALING: just keep adding objects below. The grid shows up to
-  // TILE_COUNT_MAX tiles at once and, once there are more real (non-TBD)
+  // TILE_COUNT_MAX (currently 8) tiles at once and, once there are more real (non-TBD)
   // entries than that, each tile independently and continuously swaps
   // itself for another entry from the array, pseudo-randomly, forever —
   // nothing else here needs to change as the list grows.
@@ -701,14 +701,14 @@
     { company: "National Security Agency", sub: "", industry: "Defense & Intelligence", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 7 },
     { company: "U.S. Geological Survey", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 8 },
     { company: "U.S. House of Representatives", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 9 },
+    { company: "F.W. Webb", sub: "", industry: "Plumbing, HVAC & Industrial Distribution", level: "Global COO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
+    { company: "Tiendas D1", sub: "", industry: "Discount Grocery Retail — Colombia", level: "EVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
+    { company: "Kendall Electric", sub: "", industry: "Electrical Distribution", level: "EVP, Operations", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
+    { company: "Crane Worldwide Logistics", sub: "", industry: "Freight Forwarding & Logistics", level: "VP, Operations & Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
 
     // Placeholders — fill in company, sub, industry, level, and either
     // revenueDisplay/revenueValue or scaleNote for each. Rows stay out
     // of the live rotation above until "level" is changed from "TBD".
-    { company: "Company 10", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
-    { company: "Company 11", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
-    { company: "Company 12", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
-    { company: "Company 13", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
     { company: "Company 14", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 14 },
     { company: "Company 15", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 15 },
     { company: "Company 16", sub: "", industry: "TBD", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 16 },
@@ -728,7 +728,7 @@
   // Respects prefers-reduced-motion (renders a static grid, no timers) and
   // exposes a Pause/Resume control for anyone who wants to stop it.
   // -----------------------------------------------------------------------
-  var TILE_COUNT_MAX = 12;
+  var TILE_COUNT_MAX = 8;
   var FADE_MS = 450;
   var MIN_DELAY_MS = 3200;
   var MAX_DELAY_MS = 6800;
@@ -768,6 +768,11 @@
         return shuffleQueue.splice(i, 1)[0];
       }
     }
+    // Everything left in the queue is already on screen. Rebuild it from
+    // the entries that aren't showing so a company never appears twice.
+    shuffleQueue = shuffled(pool.filter(function(r){
+      return excludeKeys.indexOf(keyOf(r)) === -1;
+    }));
     return shuffleQueue.shift();
   }
 
@@ -806,9 +811,11 @@
 
   function rotateTile(tileObj){
     var next = nextItem(currentKeys());
+    // Claim the entry immediately so a tile fading at the same moment
+    // can't pick it too and show the same company twice.
+    tileObj.item = next;
     tileObj.el.classList.add('tile-fade');
     setTimeout(function(){
-      tileObj.item = next;
       tileObj.el.innerHTML = tileMarkup(next);
       tileObj.el.classList.remove('tile-fade');
       scheduleTile(tileObj);
