@@ -393,6 +393,15 @@
   }
   .track-tile.tile-fade{ opacity: 0; transform: translateY(5px); }
   .track-company{ font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.02rem; }
+  .track-company .track-link{
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .track-company .track-link:hover{
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
   .track-company .sub{
     display: block;
     font-size: 0.76rem;
@@ -674,6 +683,8 @@
   // Each row:
   //   company       — display name
   //   sub           — optional detail line under the name (brands, group)
+  //   url           — optional; when set, the company name links to it
+  //                   (opens in a new tab)
   //   industry      — shown as a small tag on the tile
   //   level         — title/level of the contact reached. Use "TBD" as a
   //                   placeholder for an entry added before the exact
@@ -692,19 +703,19 @@
   // nothing else here needs to change as the list grows.
   // ---------------------------------------------------------------------
   var trackRecord = [
-    { company: "Albertsons", sub: "", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "$83.2B", revenueValue: 83200000000, private: false, addedOrder: 1 },
-    { company: "Ross Stores", sub: "", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "$22.75B", revenueValue: 22750000000, private: false, addedOrder: 2 },
-    { company: "Vertiv", sub: "", industry: "Data Center Infrastructure", level: "SVP, Supply Chain", revenueDisplay: "$10.2B", revenueValue: 10200000000, private: false, addedOrder: 3 },
-    { company: "Fastco Industries", sub: "", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 4 },
-    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 5 },
+    { company: "Albertsons", sub: "", url: "https://www.albertsonscompanies.com", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "$83.2B", revenueValue: 83200000000, private: false, addedOrder: 1 },
+    { company: "Ross Stores", sub: "", url: "https://www.rossstores.com", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "$22.75B", revenueValue: 22750000000, private: false, addedOrder: 2 },
+    { company: "Vertiv", sub: "", url: "https://www.vertiv.com", industry: "Data Center Infrastructure", level: "Global SVP, Supply Chain", revenueDisplay: "$10.2B", revenueValue: 10200000000, private: false, addedOrder: 3 },
+    { company: "Fastco Industries", sub: "", url: "https://www.fastcoindustries.com", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 4 },
+    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", url: "https://www.cityelectricsupply.com", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 5 },
     { company: "U.S. Air Force", sub: "Special Projects", industry: "Defense & Military", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 6 },
     { company: "National Security Agency", sub: "", industry: "Defense & Intelligence", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 7 },
     { company: "U.S. Geological Survey", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 8 },
     { company: "U.S. House of Representatives", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 9 },
-    { company: "F.W. Webb", sub: "", industry: "Plumbing, HVAC & Industrial Distribution", level: "Global COO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
-    { company: "Tiendas D1", sub: "", industry: "Discount Grocery Retail — Colombia", level: "EVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
-    { company: "Kendall Electric", sub: "", industry: "Electrical Distribution", level: "EVP, Operations", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
-    { company: "Crane Worldwide Logistics", sub: "", industry: "Freight Forwarding & Logistics", level: "VP, Operations & Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
+    { company: "F.W. Webb", sub: "", url: "https://www.fwwebb.com", industry: "Plumbing, HVAC & Industrial Distribution", level: "Global COO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
+    { company: "Tiendas D1", sub: "", url: "https://www.d1.com.co", industry: "Discount Grocery Retail — Colombia", level: "EVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
+    { company: "Kendall Electric", sub: "", url: "https://www.kendallelectric.com", industry: "Electrical Distribution", level: "EVP, Operations", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
+    { company: "Crane Worldwide Logistics", sub: "", url: "https://www.craneww.com", industry: "Freight Forwarding & Logistics", level: "VP, Operations & Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
 
     // Placeholders — fill in company, sub, industry, level, and either
     // revenueDisplay/revenueValue or scaleNote for each. Rows stay out
@@ -778,8 +789,11 @@
 
   function tileMarkup(item){
     var subHtml = item.sub ? '<span class="sub">' + item.sub + '</span>' : '';
+    var nameHtml = item.url
+      ? '<a class="track-link" href="' + item.url + '" target="_blank" rel="noopener">' + item.company + '</a>'
+      : item.company;
     return '' +
-      '<div class="track-company">' + item.company + subHtml + '</div>' +
+      '<div class="track-company">' + nameHtml + subHtml + '</div>' +
       '<div class="track-level">' + item.level + '</div>' +
       '<div class="track-industry">' + item.industry + '</div>';
   }
