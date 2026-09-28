@@ -399,6 +399,10 @@
     transition: opacity 0.45s ease, transform 0.45s ease;
   }
   .track-tile.tile-fade{ opacity: 0; transform: translateY(5px); }
+  .track-tile.is-empty{
+    background: transparent;
+    border-color: rgba(255,255,255,0.05);
+  }
   .track-company{ font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1.02rem; }
   .track-company .track-link{
     color: inherit;
@@ -703,11 +707,12 @@
   //                   reference/reuse but not shown on the tiles below.
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
-  // SCALING: just keep adding objects below. The grid shows up to
-  // TILE_COUNT_MAX (currently 8) tiles at once and, once there are more real (non-TBD)
-  // entries than that, each tile independently and continuously swaps
-  // itself for another entry from the array, pseudo-randomly, forever —
-  // nothing else here needs to change as the list grows.
+  // SCALING: just keep adding objects below. The grid is a fixed 4 x 2
+  // frame of 8 slots. It opens with 3 filled, then every few seconds the
+  // oldest 1–2 tiles fade out and 1–2 new entries fade into empty slots,
+  // so only a few are readable at once and a visitor has to stay to see
+  // the whole list. Every real (non-TBD) entry cycles through before any
+  // repeats — nothing else here needs to change as the list grows.
   // ---------------------------------------------------------------------
   var trackRecord = [
     { company: "Albertsons", sub: "", url: "https://www.albertsonscompanies.com", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "$83.2B", revenueValue: 83200000000, private: false, addedOrder: 1 },
@@ -737,37 +742,46 @@
   ];
 
   // -----------------------------------------------------------------------
-  // LIVE ROTATING GRID — a fixed number of tiles, each on its own timer,
-  // independently swapping to another (not-currently-shown) entry with a
-  // brief fade. Because each tile's timer is staggered and randomized,
-  // tiles update one at a time rather than all at once — the "matrix of
-  // companies renewing in a pseudo-random pattern" effect. Once there are
-  // more eligible entries than tiles, it repeats indefinitely by design.
+  // STAGGERED REVEAL — a fixed 4 x 2 frame of SLOT_COUNT slots. Empty slots
+  // render as faint outlines so the frame holds its shape. The grid opens
+  // with START_VISIBLE tiles in random slots. Then, every STEP_MIN_MS to
+  // STEP_MAX_MS, the OLDEST 1–2 visible tiles fade out and, a beat later,
+  // 1–2 new entries fade into random empty slots. The visible count stays
+  // between MIN_VISIBLE and MAX_VISIBLE so a visitor can focus on a few at
+  // a time, and each tile stays up for at least two steps so there is time
+  // to read it. Entries are drawn from a shuffled queue that only refills
+  // from what is off screen, so every entry appears before any repeats.
   // Respects prefers-reduced-motion (renders a static grid, no timers) and
-  // exposes a Pause/Resume control for anyone who wants to stop it.
+  // exposes a Pause/Resume control.
   // -----------------------------------------------------------------------
-  var TILE_COUNT_MAX = 8;
+  var SLOT_COUNT = 8;        // 4 x 2
+  var START_VISIBLE = 3;
+  var MIN_VISIBLE = 2;
+  var MAX_VISIBLE = 4;
+  var STEP_MIN_MS = 7000;    // pause between steps — reading time
+  var STEP_MAX_MS = 10000;
   var FADE_MS = 450;
-  // Each tile waits a random 8–14 s between swaps, so with eight tiles a
-  // change happens roughly every 1.5 s somewhere in the grid.
-  var MIN_DELAY_MS = 8000;
-  var MAX_DELAY_MS = 14000;
+  var ADD_AFTER_REMOVE_MS = 700;
 
   var gridEl = document.getElementById('trackGrid');
   var pauseBtn = document.getElementById('gridPauseBtn');
   var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   // Only entries with a confirmed level join the live pool — "TBD" rows
-  // stay out of rotation until you fill in the real title.
+  // stay out until you fill in the real title.
   var pool = trackRecord.filter(function(r){ return r.level && r.level.toUpperCase() !== 'TBD'; });
-  var tileCount = Math.min(TILE_COUNT_MAX, pool.length);
-  var rotates = !reduceMotion && pool.length > tileCount && tileCount > 0;
+  var animates = !reduceMotion && pool.length > START_VISIBLE;
 
-  var tiles = [];
+  var slots = [];          // { el, item|null, shownAt }
   var shuffleQueue = [];
+  var stepTimer = null;
+  var pendingAdd = null;
   var paused = false;
+  var clock = 0;           // monotonic counter for "oldest first"
 
   function keyOf(item){ return item.company + '|' + item.addedOrder; }
+  function randInt(lo, hi){ return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+  function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
 
   function shuffled(arr){
     var a = arr.slice();
@@ -778,22 +792,23 @@
     return a;
   }
 
-  // Draws the next tile's content from a shuffled queue (reshuffled once
-  // exhausted) so every entry cycles through before anything repeats,
-  // skipping whatever is currently showing on another tile.
-  function nextItem(excludeKeys){
+  function visibleKeys(){
+    return slots.filter(function(sl){ return sl.item; }).map(function(sl){ return keyOf(sl.item); });
+  }
+
+  // Draws the next entry from a shuffled queue, skipping anything on
+  // screen. When only on-screen entries remain, the queue is rebuilt
+  // from the off-screen ones, so a company never shows twice at once.
+  function nextItem(){
+    var exclude = visibleKeys();
     if(shuffleQueue.length === 0){ shuffleQueue = shuffled(pool); }
     for(var i = 0; i < shuffleQueue.length; i++){
-      if(excludeKeys.indexOf(keyOf(shuffleQueue[i])) === -1){
+      if(exclude.indexOf(keyOf(shuffleQueue[i])) === -1){
         return shuffleQueue.splice(i, 1)[0];
       }
     }
-    // Everything left in the queue is already on screen. Rebuild it from
-    // the entries that aren't showing so a company never appears twice.
-    shuffleQueue = shuffled(pool.filter(function(r){
-      return excludeKeys.indexOf(keyOf(r)) === -1;
-    }));
-    return shuffleQueue.shift();
+    shuffleQueue = shuffled(pool.filter(function(r){ return exclude.indexOf(keyOf(r)) === -1; }));
+    return shuffleQueue.shift() || null;
   }
 
   function tileMarkup(item){
@@ -807,33 +822,95 @@
       '<div class="track-industry">' + item.industry + '</div>';
   }
 
-  function currentKeys(){
-    return tiles.map(function(t){ return keyOf(t.item); });
-  }
-
-  function buildTiles(){
+  function buildSlots(){
     if(!gridEl) return;
     gridEl.innerHTML = '';
-    tiles = [];
-    shuffleQueue = shuffled(pool);
-    var initial = shuffleQueue.splice(0, tileCount);
-    initial.forEach(function(item){
+    slots = [];
+    for(var i = 0; i < SLOT_COUNT; i++){
       var el = document.createElement('div');
-      el.className = 'track-tile';
-      el.innerHTML = tileMarkup(item);
+      el.className = 'track-tile is-empty';
       gridEl.appendChild(el);
-      tiles.push({ el: el, item: item, timer: null });
-    });
+      slots.push({ el: el, item: null, shownAt: 0 });
+    }
+  }
+
+  // Fill a slot immediately (no fade) — used for the opening state and
+  // the reduced-motion static grid.
+  function fillNow(slot, item){
+    slot.item = item;
+    slot.shownAt = ++clock;
+    slot.el.innerHTML = tileMarkup(item);
+    slot.el.classList.remove('is-empty');
+  }
+
+  function fadeIn(slot, item){
+    slot.item = item;
+    slot.shownAt = ++clock;
+    slot.el.innerHTML = tileMarkup(item);
+    slot.el.classList.add('tile-fade');
+    slot.el.classList.remove('is-empty');
+    // next frame: let the transition run from faded to visible
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ slot.el.classList.remove('tile-fade'); }); });
+  }
+
+  function fadeOut(slot){
+    slot.item = null;   // release immediately so a new pick can't collide
+    slot.el.classList.add('tile-fade');
+    setTimeout(function(){
+      slot.el.innerHTML = '';
+      slot.el.classList.add('is-empty');
+      slot.el.classList.remove('tile-fade');
+    }, FADE_MS);
+  }
+
+  function emptySlots(){ return slots.filter(function(sl){ return !sl.item; }); }
+
+  function addTiles(n){
+    var empties = shuffled(emptySlots());
+    for(var i = 0; i < n && i < empties.length; i++){
+      var item = nextItem();
+      if(!item) break;
+      fadeIn(empties[i], item);
+    }
+  }
+
+  function step(){
+    var visible = slots.filter(function(sl){ return sl.item; })
+      .sort(function(a, b){ return a.shownAt - b.shownAt; });   // oldest first
+    var count = visible.length;
+
+    // Remove 1–2 of the oldest, never dropping below MIN_VISIBLE.
+    var remove = clamp(randInt(1, 2), 0, count - MIN_VISIBLE);
+    for(var i = 0; i < remove; i++){ fadeOut(visible[i]); }
+
+    // A beat later, add 1–2, never exceeding MAX_VISIBLE.
+    var add = clamp(randInt(1, 2), 1, MAX_VISIBLE - (count - remove));
+    pendingAdd = setTimeout(function(){
+      pendingAdd = null;
+      if(!paused){ addTiles(add); }
+      scheduleStep();
+    }, remove > 0 ? ADD_AFTER_REMOVE_MS : 0);
+  }
+
+  function scheduleStep(){
+    if(!animates || paused) return;
+    clearTimeout(stepTimer);
+    stepTimer = setTimeout(step, randInt(STEP_MIN_MS, STEP_MAX_MS));
+  }
+
+  function stopSteps(){
+    clearTimeout(stepTimer); stepTimer = null;
+    clearTimeout(pendingAdd); pendingAdd = null;
   }
 
   // Renders every eligible entry into a hidden probe tile at the live
-  // tile width, takes the tallest, and sets --tile-h so all tiles match.
+  // slot width, takes the tallest, and sets --tile-h so all tiles match.
   // Re-runs when fonts finish loading and on resize.
   function sizeTiles(){
-    if(!gridEl || tiles.length === 0) return;
+    if(!gridEl || slots.length === 0) return;
     var probe = document.createElement('div');
     probe.className = 'track-tile';
-    probe.style.cssText = 'position:absolute;top:0;left:0;visibility:hidden;pointer-events:none;height:auto;min-height:0;width:' + tiles[0].el.getBoundingClientRect().width + 'px';
+    probe.style.cssText = 'position:absolute;top:0;left:0;visibility:hidden;pointer-events:none;height:auto;min-height:0;width:' + slots[0].el.getBoundingClientRect().width + 'px';
     gridEl.appendChild(probe);
     var max = 0;
     pool.forEach(function(item){
@@ -850,50 +927,26 @@
   });
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(sizeTiles); }
 
-  function scheduleTile(tileObj, initialDelay){
-    if(!rotates || paused) return;
-    var delay = initialDelay != null ? initialDelay : (MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS));
-    tileObj.timer = setTimeout(function(){ rotateTile(tileObj); }, delay);
-  }
-
-  function rotateTile(tileObj){
-    var next = nextItem(currentKeys());
-    // Claim the entry immediately so a tile fading at the same moment
-    // can't pick it too and show the same company twice.
-    tileObj.item = next;
-    tileObj.el.classList.add('tile-fade');
-    setTimeout(function(){
-      tileObj.el.innerHTML = tileMarkup(next);
-      tileObj.el.classList.remove('tile-fade');
-      scheduleTile(tileObj);
-    }, FADE_MS);
-  }
-
-  function startRotation(){
-    tiles.forEach(function(t, i){
-      scheduleTile(t, 500 + i * 350 + Math.random() * 900);
-    });
-  }
-
-  function stopRotation(){
-    tiles.forEach(function(t){
-      if(t.timer){ clearTimeout(t.timer); t.timer = null; }
-    });
-  }
-
-  buildTiles();
+  buildSlots();
   sizeTiles();
 
-  if(rotates && pauseBtn){
-    pauseBtn.hidden = false;
-    startRotation();
-    pauseBtn.addEventListener('click', function(){
-      paused = !paused;
-      pauseBtn.textContent = paused ? 'Resume ▷' : 'Pause';
-      if(paused){ stopRotation(); } else { startRotation(); }
-    });
-  } else if(pauseBtn){
-    pauseBtn.hidden = true;
+  if(animates){
+    // Opening state: START_VISIBLE tiles in random slots.
+    var openSlots = shuffled(slots).slice(0, START_VISIBLE);
+    openSlots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
+    if(pauseBtn){
+      pauseBtn.hidden = false;
+      pauseBtn.addEventListener('click', function(){
+        paused = !paused;
+        pauseBtn.textContent = paused ? 'Resume ▷' : 'Pause';
+        if(paused){ stopSteps(); } else { scheduleStep(); }
+      });
+    }
+    scheduleStep();
+  } else {
+    // Static: fill the frame with as many entries as fit, no timers.
+    slots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
+    if(pauseBtn){ pauseBtn.hidden = true; }
   }
 })();
 </script>
