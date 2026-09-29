@@ -738,7 +738,10 @@
     { company: "Ross Stores", sub: "", url: "https://www.rossstores.com", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 22800000000, private: false, addedOrder: 2 },
     { company: "Vertiv", sub: "", url: "https://www.vertiv.com", industry: "Data Center Infrastructure", level: "Global SVP, Supply Chain", revenueDisplay: "", revenueValue: 10200000000, private: false, addedOrder: 3 },
     { company: "Fastco Industries", sub: "", url: "https://www.fastcoindustries.com", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 26700000, private: true, addedOrder: 4 },
-    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", url: "https://www.cityelectricsupply.com", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 2500000000, private: true, addedOrder: 5 },
+    // Revenue is the group total: CES North America ≈ $1.11 B (FY2025-26,
+    // ~10% over the prior year's $1.01 B) + City Electrical Factors UK
+    // £559 M ≈ $0.71 B + TAMCO Group ≈ $0.04 B → ≈ $1.86 B.
+    { company: "City Electric/City Electrical Factors/Tamco", sub: "Labora Global", url: "https://www.cityelectricsupply.com", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 1860000000, private: true, addedOrder: 5 },
     { company: "U.S. Air Force", sub: "Special Projects", industry: "Defense & Military", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 6 },
     { company: "National Security Agency", sub: "", industry: "Defense & Intelligence", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 7 },
     { company: "U.S. Geological Survey", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 8 },
