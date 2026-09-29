@@ -764,28 +764,34 @@
   ];
 
   // -----------------------------------------------------------------------
-  // STAGGERED REVEAL — a fixed 4 x 2 frame of SLOT_COUNT slots. Empty slots
-  // render as faint outlines so the frame holds its shape. The grid opens
-  // with START_VISIBLE tiles in random slots and, OPENING_DELAY_MS later,
-  // runs one quick opening step (drop OPENING_REMOVE, add OPENING_ADD) so a
+  // STAGGERED REVEAL — a fixed frame of slots (4 x 2 on wide screens,
+  // 2 x 2 on phones; see LAYOUTS). Empty slots render as faint outlines so
+  // the frame holds its shape. The grid opens with a few tiles in random
+  // slots and, OPENING_DELAY_MS later, runs one quick opening step so a
   // visitor sees motion right away and doesn't wonder whether it's stuck.
   // From then on, every STEP_MIN_MS to
   // STEP_MAX_MS, the OLDEST 1–2 visible tiles fade out and, a beat later,
   // 1–2 new entries fade into random empty slots. The visible count stays
-  // between MIN_VISIBLE and MAX_VISIBLE so a visitor can focus on a few at
+  // within the layout's min/max so a visitor can focus on a few at
   // a time, and each tile stays up for at least two steps so there is time
   // to read it. Entries are drawn from a shuffled queue that only refills
   // from what is off screen, so every entry appears before any repeats.
   // Respects prefers-reduced-motion (renders a static grid, no timers) and
   // exposes a Pause/Resume control.
   // -----------------------------------------------------------------------
-  var SLOT_COUNT = 8;        // 4 x 2
-  var START_VISIBLE = 5;      // opening state, before the first step
+  // Grid shape and fill rules, by screen width. The CSS switches to two
+  // columns at PHONE_MAX_PX; here the frame becomes 2 x 2 (4 slots) with
+  // 2–3 tiles filled, versus 4 x 2 (8 slots) with 2–4 filled on wider
+  // screens. Crossing the breakpoint rebuilds the grid with the new shape.
+  var PHONE_MAX_PX = 720;
+  var LAYOUTS = {
+    wide:  { slots: 8, start: 5, openRemove: 2, openAdd: 1, min: 2, max: 4 },
+    phone: { slots: 4, start: 3, openRemove: 1, openAdd: 1, min: 2, max: 3 }
+  };
+  var phoneMq = window.matchMedia ? window.matchMedia('(max-width: ' + PHONE_MAX_PX + 'px)') : null;
+  function currentLayout(){ return (phoneMq && phoneMq.matches) ? LAYOUTS.phone : LAYOUTS.wide; }
+  var L = currentLayout();
   var OPENING_DELAY_MS = 500; // first step starts this soon after load
-  var OPENING_REMOVE = 2;     // ...dropping this many
-  var OPENING_ADD = 1;        // ...and adding this many
-  var MIN_VISIBLE = 2;        // steady-state bounds after the opening
-  var MAX_VISIBLE = 4;
   var STEP_MIN_MS = 7000;    // pause between steps — reading time
   var STEP_MAX_MS = 10000;
   var STAGE_MS = 800;                 // each of the 3 reveal/fade stages
@@ -799,7 +805,7 @@
   // Only entries with a confirmed level join the live pool — "TBD" rows
   // stay out until you fill in the real title.
   var pool = trackRecord.filter(function(r){ return r.level && r.level.toUpperCase() !== 'TBD'; });
-  var animates = !reduceMotion && pool.length > START_VISIBLE;
+  var animates = !reduceMotion && pool.length > LAYOUTS.wide.start;
 
   var slots = [];          // { el, item|null, shownAt }
   var shuffleQueue = [];
@@ -869,7 +875,7 @@
     if(!gridEl) return;
     gridEl.innerHTML = '';
     slots = [];
-    for(var i = 0; i < SLOT_COUNT; i++){
+    for(var i = 0; i < L.slots; i++){
       var el = document.createElement('div');
       el.className = 'track-tile is-empty';
       gridEl.appendChild(el);
@@ -939,19 +945,19 @@
 
   // One step: fade out `removeN` of the oldest tiles, then fade in `addN`.
   // Called with no arguments it picks 1–2 of each at random within the
-  // MIN_VISIBLE / MAX_VISIBLE bounds; the opening step passes fixed counts.
+  // layout's min/max bounds; the opening step passes fixed counts.
   function step(removeN, addN){
     var visible = slots.filter(function(sl){ return sl.item; })
       .sort(function(a, b){ return a.shownAt - b.shownAt; });   // oldest first
     var count = visible.length;
 
-    var remove = removeN != null ? removeN : clamp(randInt(1, 2), 0, count - MIN_VISIBLE);
+    var remove = removeN != null ? removeN : clamp(randInt(1, 2), 0, count - L.min);
     remove = clamp(remove, 0, count);
     for(var i = 0; i < remove; i++){ fadeOut(visible[i]); }
 
-    // A beat later, add the new tiles, never exceeding MAX_VISIBLE.
-    var add = addN != null ? addN : clamp(randInt(1, 2), 1, MAX_VISIBLE - (count - remove));
-    add = clamp(add, 0, MAX_VISIBLE - (count - remove));
+    // A beat later, add the new tiles, never exceeding the layout's max.
+    var add = addN != null ? addN : clamp(randInt(1, 2), 1, L.max - (count - remove));
+    add = clamp(add, 0, L.max - (count - remove));
     pendingAdd = setTimeout(function(){
       pendingAdd = null;
       if(!paused){ addTiles(add); }
@@ -994,27 +1000,45 @@
   });
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(sizeTiles); }
 
-  buildSlots();
-  sizeTiles();
-
-  if(animates){
-    // Opening state: START_VISIBLE tiles in random slots, then a quick
-    // first step so the grid is visibly alive within half a second.
-    var openSlots = shuffled(slots).slice(0, START_VISIBLE);
-    openSlots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
-    stepTimer = setTimeout(function(){ if(!paused){ step(OPENING_REMOVE, OPENING_ADD); } }, OPENING_DELAY_MS);
-    if(pauseBtn){
-      pauseBtn.hidden = false;
-      pauseBtn.addEventListener('click', function(){
-        paused = !paused;
-        pauseBtn.textContent = paused ? 'Resume ▷' : 'Pause';
-        if(paused){ stopSteps(); } else { scheduleStep(); }
-      });
+  // Builds the frame for the current layout and runs the opening.
+  function start(){
+    stopSteps();
+    L = currentLayout();
+    shuffleQueue = [];
+    buildSlots();
+    sizeTiles();
+    if(animates){
+      // Opening state: L.start tiles in random slots, then a quick first
+      // step so the grid is visibly alive within half a second.
+      var openSlots = shuffled(slots).slice(0, L.start);
+      openSlots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
+      if(!paused){
+        stepTimer = setTimeout(function(){ if(!paused){ step(L.openRemove, L.openAdd); } }, OPENING_DELAY_MS);
+      }
+    } else {
+      // Static: fill the frame with as many entries as fit, no timers.
+      slots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
     }
-  } else {
-    // Static: fill the frame with as many entries as fit, no timers.
-    slots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
-    if(pauseBtn){ pauseBtn.hidden = true; }
+  }
+
+  start();
+
+  if(animates && pauseBtn){
+    pauseBtn.hidden = false;
+    pauseBtn.addEventListener('click', function(){
+      paused = !paused;
+      pauseBtn.textContent = paused ? 'Resume ▷' : 'Pause';
+      if(paused){ stopSteps(); } else { scheduleStep(); }
+    });
+  } else if(pauseBtn){
+    pauseBtn.hidden = true;
+  }
+
+  // Rebuild with the other shape when the window crosses the breakpoint.
+  if(phoneMq){
+    var onMq = function(){ start(); };
+    if(phoneMq.addEventListener){ phoneMq.addEventListener('change', onMq); }
+    else if(phoneMq.addListener){ phoneMq.addListener(onMq); }
   }
 })();
 </script>
