@@ -792,8 +792,8 @@
   function currentLayout(){ return (phoneMq && phoneMq.matches) ? LAYOUTS.phone : LAYOUTS.wide; }
   var L = currentLayout();
   var OPENING_DELAY_MS = 500; // first step starts this soon after load
-  var STEP_MIN_MS = 7000;    // pause between steps — reading time
-  var STEP_MAX_MS = 10000;
+  var STEP_MIN_MS = 3000;    // quiet time between the end of one fade and
+  var STEP_MAX_MS = 5000;    // the start of the next — reading time
   var STAGE_MS = 800;                 // each of the 3 reveal/fade stages
   var FADE_MS = STAGE_MS * 3;         // full reveal or fade-out
   var ADD_AFTER_REMOVE_MS = STAGE_MS * 2;  // new tiles start as leaving ones reach their faintest stage
@@ -961,14 +961,14 @@
     pendingAdd = setTimeout(function(){
       pendingAdd = null;
       if(!paused){ addTiles(add); }
-      scheduleStep();
+      scheduleStep(FADE_MS);   // count the quiet time from when the fade-in ends
     }, remove > 0 ? ADD_AFTER_REMOVE_MS : 0);
   }
 
-  function scheduleStep(){
+  function scheduleStep(afterMs){
     if(!animates || paused) return;
     clearTimeout(stepTimer);
-    stepTimer = setTimeout(step, randInt(STEP_MIN_MS, STEP_MAX_MS));
+    stepTimer = setTimeout(step, (afterMs || 0) + randInt(STEP_MIN_MS, STEP_MAX_MS));
   }
 
   function stopSteps(){
