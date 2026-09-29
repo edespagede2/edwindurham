@@ -714,7 +714,8 @@
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
   // SCALING: just keep adding objects below. The grid is a fixed 4 x 2
-  // frame of 8 slots. It opens with 3 filled, then every few seconds the
+  // frame of 8 slots. It opens with 5 filled, drops 2 and adds 1 almost
+  // at once so it visibly moves, then every few seconds the
   // oldest 1–2 tiles fade out and 1–2 new entries fade into empty slots,
   // so only a few are readable at once and a visitor has to stay to see
   // the whole list. Every real (non-TBD) entry cycles through before any
@@ -750,7 +751,10 @@
   // -----------------------------------------------------------------------
   // STAGGERED REVEAL — a fixed 4 x 2 frame of SLOT_COUNT slots. Empty slots
   // render as faint outlines so the frame holds its shape. The grid opens
-  // with START_VISIBLE tiles in random slots. Then, every STEP_MIN_MS to
+  // with START_VISIBLE tiles in random slots and, OPENING_DELAY_MS later,
+  // runs one quick opening step (drop OPENING_REMOVE, add OPENING_ADD) so a
+  // visitor sees motion right away and doesn't wonder whether it's stuck.
+  // From then on, every STEP_MIN_MS to
   // STEP_MAX_MS, the OLDEST 1–2 visible tiles fade out and, a beat later,
   // 1–2 new entries fade into random empty slots. The visible count stays
   // between MIN_VISIBLE and MAX_VISIBLE so a visitor can focus on a few at
@@ -761,8 +765,11 @@
   // exposes a Pause/Resume control.
   // -----------------------------------------------------------------------
   var SLOT_COUNT = 8;        // 4 x 2
-  var START_VISIBLE = 3;
-  var MIN_VISIBLE = 2;
+  var START_VISIBLE = 5;      // opening state, before the first step
+  var OPENING_DELAY_MS = 500; // first step starts this soon after load
+  var OPENING_REMOVE = 2;     // ...dropping this many
+  var OPENING_ADD = 1;        // ...and adding this many
+  var MIN_VISIBLE = 2;        // steady-state bounds after the opening
   var MAX_VISIBLE = 4;
   var STEP_MIN_MS = 7000;    // pause between steps — reading time
   var STEP_MAX_MS = 10000;
@@ -904,17 +911,21 @@
     }
   }
 
-  function step(){
+  // One step: fade out `removeN` of the oldest tiles, then fade in `addN`.
+  // Called with no arguments it picks 1–2 of each at random within the
+  // MIN_VISIBLE / MAX_VISIBLE bounds; the opening step passes fixed counts.
+  function step(removeN, addN){
     var visible = slots.filter(function(sl){ return sl.item; })
       .sort(function(a, b){ return a.shownAt - b.shownAt; });   // oldest first
     var count = visible.length;
 
-    // Remove 1–2 of the oldest, never dropping below MIN_VISIBLE.
-    var remove = clamp(randInt(1, 2), 0, count - MIN_VISIBLE);
+    var remove = removeN != null ? removeN : clamp(randInt(1, 2), 0, count - MIN_VISIBLE);
+    remove = clamp(remove, 0, count);
     for(var i = 0; i < remove; i++){ fadeOut(visible[i]); }
 
-    // A beat later, add 1–2, never exceeding MAX_VISIBLE.
-    var add = clamp(randInt(1, 2), 1, MAX_VISIBLE - (count - remove));
+    // A beat later, add the new tiles, never exceeding MAX_VISIBLE.
+    var add = addN != null ? addN : clamp(randInt(1, 2), 1, MAX_VISIBLE - (count - remove));
+    add = clamp(add, 0, MAX_VISIBLE - (count - remove));
     pendingAdd = setTimeout(function(){
       pendingAdd = null;
       if(!paused){ addTiles(add); }
@@ -961,9 +972,11 @@
   sizeTiles();
 
   if(animates){
-    // Opening state: START_VISIBLE tiles in random slots.
+    // Opening state: START_VISIBLE tiles in random slots, then a quick
+    // first step so the grid is visibly alive within half a second.
     var openSlots = shuffled(slots).slice(0, START_VISIBLE);
     openSlots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
+    stepTimer = setTimeout(function(){ if(!paused){ step(OPENING_REMOVE, OPENING_ADD); } }, OPENING_DELAY_MS);
     if(pauseBtn){
       pauseBtn.hidden = false;
       pauseBtn.addEventListener('click', function(){
@@ -972,7 +985,6 @@
         if(paused){ stopSteps(); } else { scheduleStep(); }
       });
     }
-    scheduleStep();
   } else {
     // Static: fill the frame with as many entries as fit, no timers.
     slots.forEach(function(sl){ var it = nextItem(); if(it){ fillNow(sl, it); } });
