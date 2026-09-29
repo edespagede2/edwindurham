@@ -419,6 +419,13 @@
     color: var(--accent);
     border-bottom-color: var(--accent);
   }
+  .track-company .track-rev{
+    font-family: "Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 400;
+    font-size: 0.86rem;
+    color: rgba(237,239,245,0.7);
+    white-space: nowrap;
+  }
   .track-company .sub{
     display: block;
     font-size: 0.76rem;
@@ -651,7 +658,7 @@
       <button class="toggle-btn" id="gridPauseBtn" type="button" hidden>Pause</button>
     </div>
     <div class="track-grid" id="trackGrid"></div>
-    <p class="banner-note" id="trackNote">A representative sample of engagements, cycling continuously — not the complete list. Additional companies and references available on request.</p>
+    <p class="banner-note" id="trackNote">A representative sample of engagements, cycling continuously — not the complete list. Revenue figures are approximate annual estimates in USD from public sources. Additional companies and references available on request.</p>
   </div>
 </div>
 
@@ -709,8 +716,13 @@
   //                   automatically left out of the live rotation below,
   //                   so nothing unfinished shows to visitors. Swap in
   //                   the real title and the row joins the rotation.
-  //   revenueDisplay, revenueValue, private, scaleNote — kept for
-  //                   reference/reuse but not shown on the tiles below.
+  //   revenueValue  — estimated annual revenue in USD. When > 0 it is
+  //                   shown after the name as e.g. "($10.2 B)", formatted by
+  //                   formatRevenue(): billions if ≥ $1 B else millions, one
+  //                   decimal place, and no more than 3 significant digits
+  //                   ($123.2 M rounds to $123 M). 0 hides it.
+  //   revenueDisplay — optional manual override of that text (rarely needed).
+  //   private, scaleNote — kept for reference, not shown.
   //   addedOrder    — internal only; keep incrementing for new rows.
   //
   // SCALING: just keep adding objects below. The grid is a fixed 4 x 2
@@ -722,20 +734,20 @@
   // repeats — nothing else here needs to change as the list grows.
   // ---------------------------------------------------------------------
   var trackRecord = [
-    { company: "Albertsons", sub: "", url: "https://www.albertsonscompanies.com", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "$83.2B", revenueValue: 83200000000, private: false, addedOrder: 1 },
-    { company: "Ross Stores", sub: "", url: "https://www.rossstores.com", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "$22.75B", revenueValue: 22750000000, private: false, addedOrder: 2 },
-    { company: "Vertiv", sub: "", url: "https://www.vertiv.com", industry: "Data Center Infrastructure", level: "Global SVP, Supply Chain", revenueDisplay: "$10.2B", revenueValue: 10200000000, private: false, addedOrder: 3 },
-    { company: "Fastco Industries", sub: "", url: "https://www.fastcoindustries.com", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 4 },
-    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", url: "https://www.cityelectricsupply.com", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 5 },
+    { company: "Albertsons", sub: "", url: "https://www.albertsonscompanies.com", industry: "Grocery & Retail", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 83200000000, private: false, addedOrder: 1 },
+    { company: "Ross Stores", sub: "", url: "https://www.rossstores.com", industry: "Off-Price Retail", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 22800000000, private: false, addedOrder: 2 },
+    { company: "Vertiv", sub: "", url: "https://www.vertiv.com", industry: "Data Center Infrastructure", level: "Global SVP, Supply Chain", revenueDisplay: "", revenueValue: 10200000000, private: false, addedOrder: 3 },
+    { company: "Fastco Industries", sub: "", url: "https://www.fastcoindustries.com", industry: "Industrial Distribution", level: "SVP, Supply Chain", revenueDisplay: "", revenueValue: 26700000, private: true, addedOrder: 4 },
+    { company: "City Electric Supply", sub: "CES / City Electrical Factors (CEF) / TAMCO — Labora Global", url: "https://www.cityelectricsupply.com", industry: "Electrical Distribution & Manufacturing", level: "Global CEO", revenueDisplay: "", revenueValue: 2500000000, private: true, addedOrder: 5 },
     { company: "U.S. Air Force", sub: "Special Projects", industry: "Defense & Military", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 6 },
     { company: "National Security Agency", sub: "", industry: "Defense & Intelligence", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Defense", addedOrder: 7 },
     { company: "U.S. Geological Survey", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 8 },
     { company: "U.S. House of Representatives", sub: "", industry: "Federal Government — Civilian", level: "TBD", revenueDisplay: "", revenueValue: 0, private: true, scaleNote: "Federal Agency", addedOrder: 9 },
-    { company: "F.W. Webb", sub: "", url: "https://www.fwwebb.com", industry: "Plumbing, HVAC & Industrial Distribution", level: "Global COO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 10 },
-    { company: "Tiendas D1", sub: "", url: "https://www.d1.com.co", industry: "Discount Grocery Retail — Colombia", level: "EVP, Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 11 },
-    { company: "Kendall Electric", sub: "", url: "https://www.kendallelectric.com", industry: "Electrical Distribution", level: "EVP, Operations", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 12 },
-    { company: "Crane Worldwide Logistics", sub: "", url: "https://www.craneww.com", industry: "Freight Forwarding & Logistics", level: "VP, Operations & Supply Chain", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 13 },
-    { company: "Navistar", sub: "Now part of TRATON GROUP", url: "https://www.international.com", industry: "Commercial Trucks & Engines", level: "Global CEO", revenueDisplay: "", revenueValue: 0, private: true, addedOrder: 14 },
+    { company: "F.W. Webb", sub: "", url: "https://www.fwwebb.com", industry: "Plumbing, HVAC & Industrial Distribution", level: "Global COO", revenueDisplay: "", revenueValue: 2400000000, private: true, addedOrder: 10 },
+    { company: "Tiendas D1", sub: "", url: "https://www.d1.com.co", industry: "Discount Grocery Retail — Colombia", level: "EVP, Supply Chain", revenueDisplay: "", revenueValue: 5200000000, private: true, addedOrder: 11 },
+    { company: "Kendall Electric", sub: "", url: "https://www.kendallelectric.com", industry: "Electrical Distribution", level: "EVP, Operations", revenueDisplay: "", revenueValue: 434000000, private: true, addedOrder: 12 },
+    { company: "Crane Worldwide Logistics", sub: "", url: "https://www.craneww.com", industry: "Freight Forwarding & Logistics", level: "VP, Operations & Supply Chain", revenueDisplay: "", revenueValue: 915000000, private: true, addedOrder: 13 },
+    { company: "Navistar", sub: "Now part of TRATON GROUP", url: "https://www.international.com", industry: "Commercial Trucks & Engines", level: "Global CEO", revenueDisplay: "", revenueValue: 11200000000, private: true, addedOrder: 14 },
 
     // Placeholders — fill in company, sub, industry, level, and either
     // revenueDisplay/revenueValue or scaleNote for each. Rows stay out
@@ -828,13 +840,24 @@
     return shuffleQueue.shift() || null;
   }
 
+  // "$83.2 B", "$915 M", "$26.7 M": one decimal, max 3 significant digits.
+  function formatRevenue(value){
+    if(!value || value <= 0) return '';
+    var unit = value >= 999.5e6 ? 'B' : 'M';   // $999.6 M rounds up to $1.0 B
+    var n = value / (unit === 'B' ? 1e9 : 1e6);
+    var text = n >= 100 ? String(Math.round(n)) : (Math.round(n * 10) / 10).toFixed(1);
+    return '$' + text + ' ' + unit;
+  }
+
   function tileMarkup(item){
     var subHtml = item.sub ? '<span class="sub">' + item.sub + '</span>' : '';
     var nameHtml = item.url
       ? '<a class="track-link" href="' + item.url + '" target="_blank" rel="noopener">' + item.company + '</a>'
       : item.company;
+    var rev = item.revenueDisplay || formatRevenue(item.revenueValue);
+    var revHtml = rev ? ' <span class="track-rev">(' + rev + ')</span>' : '';
     return '' +
-      '<div class="track-company">' + nameHtml + subHtml + '</div>' +
+      '<div class="track-company">' + nameHtml + revHtml + subHtml + '</div>' +
       '<div class="track-level">' + item.level + '</div>' +
       '<div class="track-industry">' + item.industry + '</div>';
   }
